@@ -1,0 +1,33 @@
+int_sum[
+  in_ call.open call.(
+    func[
+      left[in_ arg.open arg.in int.in plus]|
+      right[in_ arg.open arg.in int.in plus]|
+      int[
+        plus[in_ left|in_ right]|
+        in_ left|in_ right
+      ]|
+      open_
+    ]|
+    open return.open_
+  )
+]|
+program[
+  in_ call.open call.(
+    out_ call.in_ int_sum|
+    call[
+      out program.in int_sum.open_.return[open_.in program.in func]
+    ]|
+    func[
+      in_ int_sum.open int_sum.(
+        arg[int[i1[]]|in left.open_]|
+        arg[int[i2[]]|in right.open_]|
+        open func.open_
+      )
+    ]|
+    open func.open return.open_
+  )
+]|
+call[in program.open_.return[open_.in func]]|
+func[in_ program.open program.open_]|
+open func
