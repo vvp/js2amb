@@ -18,11 +18,11 @@ rules.VariableDeclarator = function (block, parent, depth, currentPath, options)
   const name = parseBlock(block.id, block, depth, currentPath, options)
   const init = parseBlock(block.init, block, depth, currentPath, options)
 
-  if (block.init.type === "Literal" && parent.type === "VariableDeclaration") {
-    return ""
-  } else if (block.init.type === "Identifier" && parent.type === "VariableDeclaration") {
+  if (block.init.type === 'Literal' && parent.type === 'VariableDeclaration') {
+    return ''
+  } else if (block.init.type === 'Identifier' && parent.type === 'VariableDeclaration') {
     options.aliases[name] = init
-    return ""
+    return ''
   }
 
   return name + '[' + init + ']'
@@ -34,15 +34,15 @@ rules.ArrowFunctionExpression = function (block, parent, depth, currentPath, opt
   const paramNames = params.map(e => e.name)
   const hasParams = (params && params.length > 0)
 
-  options.names[parentName] = {args: paramNames} // save the param names to a global cache for using as a lookup index elsewhere in the compiler
+  options.names[parentName] = { args: paramNames } // save the param names to a global cache for using as a lookup index elsewhere in the compiler
 
-  let functionBody = ""
-  let functionName = ""
-  let functionType = ""
+  let functionBody = ''
+  let functionName = ''
+  let functionType = ''
 
-  if (block.body.type === "BinaryExpression") {
+  if (block.body.type === 'BinaryExpression') {
     const operator = block.body.operator
-    if (operator === "+") {
+    if (operator === '+') {
       functionName = `concat`
       functionType = `string`
     }
@@ -61,12 +61,12 @@ rules.ArrowFunctionExpression = function (block, parent, depth, currentPath, opt
   } else {
     let syntax = 'in_ call.open call'
 
-    if (block.body.type === "Identifier" && options.names[block.body.name]) {
+    if (block.body.type === 'Identifier' && options.names[block.body.name]) {
       // Replace variable directly with its (previously compiled) value
       syntax += '.('
       const value = options.names[block.body.name].value
       syntax += value + '|'
-    } else if (block.body.type === "Literal") {
+    } else if (block.body.type === 'Literal') {
       syntax += '.('
       syntax += parseBlock(block.body, parent, depth, currentPath, options)
     } else {
@@ -100,8 +100,8 @@ rules.CallExpression = function (block, parent, depth, currentPath, options, amb
   const args = block.arguments
   const paramNames = options.names[funcName] ? options.names[funcName].args : []
   const params = args.map((e, i) => {
-    const opts = {target: paramNames[i], isLast: i === paramNames.length - 1}
-    return parseBlock(e, parent, depth, currentPath, {...opts, ...options}, ambients)
+    const opts = { target: paramNames[i], isLast: i === paramNames.length - 1 }
+    return parseBlock(e, parent, depth, currentPath, { ...opts, ...options }, ambients)
   })
 
   const canBeCalled = (parent.type === 'VariableDeclarator' && parent.init.type === 'CallExpression') &&
@@ -133,13 +133,13 @@ rules.Literal = (block, parent, depth, currentPath, options, ambients) => {
   const type = typeof value
   const parentBody = parent.init.body
 
-  if (parentBody && parentBody.type === "CallExpression") {
+  if (parentBody && parentBody.type === 'CallExpression') {
     const { target, isLast } = options
-    const p = isLast ? "" : "|"
+    const p = isLast ? '' : '|'
     ambient = `arg[${type}[${value}[]]|in ${target}.open_]${p}`
-  } else if (parent.type === "VariableDeclarator") {
+  } else if (parent.type === 'VariableDeclarator') {
     ambient = `${type}[${value}[]]`
-    options.names[parent.id.name] = {value: ambient}
+    options.names[parent.id.name] = { value: ambient }
     ambient += '|'
   }
   return ambient
@@ -154,12 +154,12 @@ rules.BinaryExpression = function (block, parent, depth, currentPath, options, a
 
 rules.Program = function (block, parent, depth, currentPath, options) {
   let ambients = ''
-    block.body.forEach((e, i) => {
-      // console.log("parse:", e)
-      const isLast = (i === block.body.length - 1)
-      const parsed = parseBlock(e, parent, depth, currentPath, options)
-      ambients += parsed + (isLast || parsed === "" ? "" : "|")
-    })
+  block.body.forEach((e, i) => {
+    // console.log("parse:", e)
+    const isLast = (i === block.body.length - 1)
+    const parsed = parseBlock(e, parent, depth, currentPath, options)
+    ambients += parsed + (isLast || parsed === '' ? '' : '|')
+  })
   return ambients
 }
 
@@ -177,5 +177,5 @@ const parseBlock = (block, parent, depth, currentPath, options) => {
 
 module.exports = function (js) {
   const parsed = esprima.parseScript(js)
-  return parseBlock(parsed, null, 0, '', {names: {}, aliases: {}})
+  return parseBlock(parsed, null, 0, '', { names: {}, aliases: {} })
 }
