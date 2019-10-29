@@ -1,0 +1,6 @@
+a[
+  in_ call.open call.(
+    string[a[]]|
+    open return.open_
+  )
+]
