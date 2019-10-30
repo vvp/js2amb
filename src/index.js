@@ -30,10 +30,13 @@ const binaryExpression = (left, right, operator) => {
 }
 
 const callExpression = (functionName) => ({
-  toAlgebra: () => {
+  toAlgebra: (scope) => {
+    let scopesToPass = scope.allow('call', functionName)
+    let outCalls = scopesToPass.map(x => `out ${x}.`)
+    let inReturns = scopesToPass.reverse().map(x => `in ${x}.`)
     const algebra = `
-      call[in ${functionName}.open_.return[open_.in func]]|
-      func[open ${functionName}.open_]|
+      call[${outCalls}in ${functionName}.open_.return[open_.${inReturns}in func]]|
+      func[in_ ${functionName}.open ${functionName}.open_]|
       open func`
     return algebra
   }
@@ -43,47 +46,49 @@ let primitives = {}
 primitives.string = {
   literal: (value) => ({
     type: 'string',
-    toAlgebra: () => `string[${value}[]]`
+    toAlgebra: (scope) => `string[${value}[]]`
   }),
   plus: (left, right) => ({
     type: 'string',
-    toAlgebra: () => `string[concat[left[${left.toAlgebra()}]|right[${right.toAlgebra()}]]]`
+    toAlgebra: (scope) => `string[concat[left[${left.toAlgebra(scope)}]|right[${right.toAlgebra(scope)}]]]`
   })
 }
 primitives.number = {
   literal: (value) => ({
     type: 'number',
-    toAlgebra: () => `int[i${value}[]]`
+    toAlgebra: (scope) => `int[i${value}[]]`
   }),
   plus: (left, right) => ({
     type: 'number',
-    toAlgebra: () => `int[plus[left[${left.toAlgebra()}]|right[${right.toAlgebra()}]]]`
+    toAlgebra: (scope) => `int[plus[left[${left.toAlgebra(scope)}]|right[${right.toAlgebra(scope)}]]]`
   }),
   multiply: (left, right) => ({
     type: 'number',
-    toAlgebra: () => `int[multiply[left[${left.toAlgebra()}]|right[${right.toAlgebra()}]]]`
+    toAlgebra: (scope) => `int[multiply[left[${left.toAlgebra(scope)}]|right[${right.toAlgebra(scope)}]]]`
   })
 }
 
 const functionBody = (args, expression) => ({
-  toAlgebra: () => {
+  toAlgebra: (scope) => {
     const algebra = `in_ call.open call.(
-      ${[expression.toAlgebra(), 'open return.open_'].join('|')})`
+      ${[expression.toAlgebra(scope), 'open return.open_'].join('|')})`
     return algebra
   }
 })
 
 const functionDefinition = (name, body) => ({
-  toAlgebra: () => {
-    const algebra = `${name}[${body.toAlgebra()}]`
+  toAlgebra: (scope) => {
+    let newScope = scope.newScope(name)
+    const algebra = `${name}[
+    ${[body.toAlgebra(newScope), newScope.toAlgebra()].filter(s => s.length > 0).join('|')}]`
     return algebra
   }
 })
 
 const programFile = (declarations, resultStatement) => ({
-  toAlgebra: () => {
+  toAlgebra: (scope) => {
     const algebra = declarations
-      .map(declaration => declaration.toAlgebra())
+      .map(declaration => declaration.toAlgebra(scope))
       .map(code => code.replace(/\r?\n\s*|\r\s*/g, '').replace(/\s+/g, ' '))
       .join('|')
     return algebra
@@ -120,6 +125,32 @@ const astMapper = () => ({
   }
 })
 
+class Scope {
+  constructor (name, parentScope) {
+    this._name = name
+    this._parentScope = parentScope
+    this._auths = []
+  }
+
+  newScope(name) {
+    return new Scope(name, this)
+  }
+
+  toAlgebra() {
+    return this._auths.map((auth) => `out_ ${auth.exit}.in_ ${auth.enter}`).join('|')
+  }
+
+  allow(exit, enter) {
+    if (this._parentScope === undefined) {
+      return []
+    }
+    this._auths.push({exit: exit, enter: enter})
+    return [this._name].concat(this._parentScope.allow(exit, enter))
+  }
+}
+
+const rootScope = new Scope()
+
 module.exports = function (js) {
   let mapper = astMapper()
   mapper.register('Literal', (node) => literal(node.value))
@@ -132,6 +163,5 @@ module.exports = function (js) {
   mapper.register('ExpressionStatement', (node) => mapper.lookup((node.expression)))
   mapper.register('Program', (node) => programFile(mapper.lookup(node.body)))
   let program = mapper.parseAndMap(js)
-  return program.toAlgebra()
-
+  return program.toAlgebra(rootScope)
 }
