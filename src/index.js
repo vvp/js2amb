@@ -28,7 +28,7 @@ const programFile = (declarations, resultStatement) => ({
     const algebra = declarations
       .map(declaration => declaration.toAlgebra())
       .map(code => code.replace(/\r?\n\s*|\r\s*/g, '').replace(/\s+/g, ' '))
-      .join("|")
+      .join('|')
     return algebra
   }
 })
@@ -43,7 +43,7 @@ const astMapper = () => ({
     if (Array.isArray(node)) {
       return node
         .map((n) => this.lookupMap.get(n))
-        .reduce((acc,x) => acc.concat(x), [])
+        .reduce((acc, x) => acc.concat(x), [])
     }
     return this.lookupMap.get(node)
   },
@@ -51,7 +51,7 @@ const astMapper = () => ({
     let counter = 0
     let latestNode
     let esprimaMapper = (node, meta) => {
-      console.log(`${++counter}: ${node.type} (${js.substring(meta.start.offset, meta.end.offset)}) - (${Object.keys(node)})` )
+      console.log(`${++counter}: ${node.type} (${js.substring(meta.start.offset, meta.end.offset)}) - (${Object.keys(node)})`)
       const mapFunc = this.mappers[node.type]
       if (mapFunc === undefined)
         return
@@ -71,5 +71,5 @@ module.exports = function (js) {
   mapper.register('VariableDeclaration', (node) => mapper.lookup(node.declarations))
   mapper.register('Program', (node) => programFile(mapper.lookup(node.body)))
   return mapper.parseAndMap(js).toAlgebra()
-  
+
 }
