@@ -2,23 +2,46 @@ const esprima = require('esprima')
 
 const literal = (value) => {
   let primitive = primitives[typeof value]
-  if (primitive === undefined) {
-    throw new Error(`primitive '${typeof value}' is not supported`)
+  if (primitive === undefined || primitive.literal === undefined) {
+    throw new Error(`primitive '${typeof value}' is not supported as literal`)
   }
   return primitive.literal(value)
+}
+const plus = (left, right) => {
+  let primitive = primitives[left.type]
+  if (primitive === undefined || primitive.literal === undefined) {
+    throw new Error(`primitive '${left.type}' is not supported for plus-operator`)
+  }
+  if (left.type !== right.type) {
+    throw new Error(`Compiler does not support implicit type conversions for binary ops`)
+  }
+  return primitive.plus(left, right)
+}
+
+const binaryExpression = (operator) => {
+  switch (operator) {
+    case '+': return plus
+  }
 }
 
 let primitives = {}
 primitives.string = {
   literal: (value) => ({
+    type: 'string',
     toAlgebra: () => `string[${value}[]]`
+  }),
+  plus: (left, right) => ({
+    type: 'string',
+    toAlgebra: () => `string[concat[left[${left.toAlgebra()}]|right[${right.toAlgebra()}]]]`
   })
 }
 primitives.number = {
   literal: (value) => ({
+    type: 'int',
     toAlgebra: () => `int[i${value}[]]`
   })
 }
+
 const functionBody = (args, expression) => ({
   toAlgebra: () => {
     const algebra = `in_ call.open call.(
@@ -77,6 +100,7 @@ const astMapper = () => ({
 module.exports = function (js) {
   let mapper = astMapper()
   mapper.register('Literal', (node) => literal(node.value))
+  mapper.register('BinaryExpression', (node) => binaryExpression(node.operator)(mapper.lookup(node.left), mapper.lookup(node.right)))
   mapper.register('ArrowFunctionExpression', (node) => functionBody([], mapper.lookup(node.body)))
   mapper.register('VariableDeclarator', (node) => functionDefinition(node.id.name, mapper.lookup(node.init)))
   mapper.register('VariableDeclaration', (node) => mapper.lookup(node.declarations))

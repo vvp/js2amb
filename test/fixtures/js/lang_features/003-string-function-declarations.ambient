@@ -9,4 +9,15 @@ b[
     string[b[]]|
     open return.open_
   )
+]|
+c[
+  in_ call.open call.(
+    string[
+      concat[
+        left[string[a[]]]|
+        right[string[b[]]]
+      ]
+    ]|
+    open return.open_
+  )
 ]
