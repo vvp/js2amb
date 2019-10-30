@@ -25,5 +25,31 @@ c[
      ]|
      open return.open_
    )
- ]
+]|
+d[
+  in_ call.open call.(
+    int[
+      plus[
+        left[
+          int[multiply[left[int[i1[]]]|right[int[i2[]]]]]
+         ]|
+         right[int[i3[]]]]
+      ]|
+    open return.open_)]|
+e[
+  in_ call.open call.(
+    int[
+      plus[
+        left[int[i1[]]]|
+        right[
+          int[
+            multiply[
+              left[int[i2[]]]|
+              right[int[i3[]]]
+            ]
+          ]
+        ]
+      ]
+    ]|
+    open return.open_)]
 
