@@ -3,4 +3,16 @@ a[
     int[i42[]]|
     open return.open_
   )
+]|
+b[
+  in_ call.open call.(
+    int[
+      plus[
+        left[int[i2[]]]|
+        right[int[i2[]]]
+      ]
+    ]|
+    open return.open_
+  )
 ]
+

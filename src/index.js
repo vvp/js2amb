@@ -37,8 +37,12 @@ primitives.string = {
 }
 primitives.number = {
   literal: (value) => ({
-    type: 'int',
+    type: 'number',
     toAlgebra: () => `int[i${value}[]]`
+  }),
+  plus: (left, right) => ({
+    type: 'number',
+    toAlgebra: () => `int[plus[left[${left.toAlgebra()}]|right[${right.toAlgebra()}]]]`
   })
 }
 
