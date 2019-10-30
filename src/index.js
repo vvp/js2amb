@@ -29,6 +29,16 @@ const binaryExpression = (left, right, operator) => {
 
 }
 
+const callExpression = (functionName) => ({
+  toAlgebra: () => {
+    const algebra = `
+      call[in ${functionName}.open_.return[open_.in func]]|
+      func[open ${functionName}.open_]|
+      open func`
+    return algebra
+  }
+})
+
 let primitives = {}
 primitives.string = {
   literal: (value) => ({
@@ -117,6 +127,9 @@ module.exports = function (js) {
   mapper.register('ArrowFunctionExpression', (node) => functionBody([], mapper.lookup(node.body)))
   mapper.register('VariableDeclarator', (node) => functionDefinition(node.id.name, mapper.lookup(node.init)))
   mapper.register('VariableDeclaration', (node) => mapper.lookup(node.declarations))
+
+  mapper.register('CallExpression', (node) => callExpression(node.callee.name))
+  mapper.register('ExpressionStatement', (node) => mapper.lookup((node.expression)))
   mapper.register('Program', (node) => programFile(mapper.lookup(node.body)))
   let program = mapper.parseAndMap(js)
   return program.toAlgebra()
