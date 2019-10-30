@@ -1,17 +1,28 @@
 const esprima = require('esprima')
 
-const literal = (value) => ({
-  toAlgebra: () => {
-    const algebra = `${typeof value}[${value}[]]`
-    return algebra
+const literal = (value) => {
+  let primitive = primitives[typeof value]
+  if (primitive === undefined) {
+    throw new Error(`primitive '${typeof value}' is not supported`)
   }
-})
+  return primitive.literal(value)
+}
 
+let primitives = {}
+primitives.string = {
+  literal: (value) => ({
+    toAlgebra: () => `string[${value}[]]`
+  })
+}
+primitives.number = {
+  literal: (value) => ({
+    toAlgebra: () => `int[i${value}[]]`
+  })
+}
 const functionBody = (args, expression) => ({
   toAlgebra: () => {
     const algebra = `in_ call.open call.(
-      ${expression.toAlgebra()}|
-      open return.open_)`
+      ${[expression.toAlgebra(), 'open return.open_'].join('|')})`
     return algebra
   }
 })
@@ -70,6 +81,7 @@ module.exports = function (js) {
   mapper.register('VariableDeclarator', (node) => functionDefinition(node.id.name, mapper.lookup(node.init)))
   mapper.register('VariableDeclaration', (node) => mapper.lookup(node.declarations))
   mapper.register('Program', (node) => programFile(mapper.lookup(node.body)))
-  return mapper.parseAndMap(js).toAlgebra()
+  let program = mapper.parseAndMap(js)
+  return program.toAlgebra()
 
 }

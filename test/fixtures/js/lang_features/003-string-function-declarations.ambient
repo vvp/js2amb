@@ -1,0 +1,12 @@
+a[
+  in_ call.open call.(
+    string[a[]]|
+    open return.open_
+  )
+]|
+b[
+  in_ call.open call.(
+    string[b[]]|
+    open return.open_
+  )
+]
