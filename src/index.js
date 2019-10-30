@@ -7,7 +7,8 @@ const literal = (value) => {
   }
   return primitive.literal(value)
 }
-const plus = (left, right) => {
+
+const verifyPrimitive = (left, right) => {
   let primitive = primitives[left.type]
   if (primitive === undefined || primitive.literal === undefined) {
     throw new Error(`primitive '${left.type}' is not supported for plus-operator`)
@@ -15,13 +16,17 @@ const plus = (left, right) => {
   if (left.type !== right.type) {
     throw new Error(`Compiler does not support implicit type conversions for binary ops`)
   }
-  return primitive.plus(left, right)
+  return primitive
 }
 
-const binaryExpression = (operator) => {
+const binaryExpression = (left, right, operator) => {
+  let primitive = verifyPrimitive(left, right)
   switch (operator) {
-    case '+': return plus
+    case '+': return primitive.plus(left, right)
+    case '*': return primitive.multiply(left, right)
+    default: throw new Error(`Operator '${operator}' is not supported`)
   }
+
 }
 
 let primitives = {}
@@ -43,6 +48,10 @@ primitives.number = {
   plus: (left, right) => ({
     type: 'number',
     toAlgebra: () => `int[plus[left[${left.toAlgebra()}]|right[${right.toAlgebra()}]]]`
+  }),
+  multiply: (left, right) => ({
+    type: 'number',
+    toAlgebra: () => `int[multiply[left[${left.toAlgebra()}]|right[${right.toAlgebra()}]]]`
   })
 }
 
@@ -104,7 +113,7 @@ const astMapper = () => ({
 module.exports = function (js) {
   let mapper = astMapper()
   mapper.register('Literal', (node) => literal(node.value))
-  mapper.register('BinaryExpression', (node) => binaryExpression(node.operator)(mapper.lookup(node.left), mapper.lookup(node.right)))
+  mapper.register('BinaryExpression', (node) => binaryExpression(mapper.lookup(node.left), mapper.lookup(node.right), node.operator))
   mapper.register('ArrowFunctionExpression', (node) => functionBody([], mapper.lookup(node.body)))
   mapper.register('VariableDeclarator', (node) => functionDefinition(node.id.name, mapper.lookup(node.init)))
   mapper.register('VariableDeclaration', (node) => mapper.lookup(node.declarations))

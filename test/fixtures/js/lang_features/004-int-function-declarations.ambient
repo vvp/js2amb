@@ -14,5 +14,16 @@ b[
     ]|
     open return.open_
   )
-]
+]|
+c[
+   in_ call.open call.(
+     int[
+       multiply[
+         left[int[i2[]]]|
+         right[int[i2[]]]
+       ]
+     ]|
+     open return.open_
+   )
+ ]
 
