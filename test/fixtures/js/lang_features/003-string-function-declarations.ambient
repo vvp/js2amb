@@ -20,4 +20,19 @@ c[
     ]|
     open return.open_
   )
+]|
+d[
+  in_ call.open call.(
+    string[
+      concat[
+        left[
+        string[concat[
+          left[string[a[]]]|
+          right[string[b[]]]
+        ]]]|
+        right[string[c[]]]
+      ]
+    ]|
+    open return.open_
+  )
 ]
