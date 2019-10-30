@@ -1,40 +1,27 @@
 const esprima = require('esprima')
 
-
-class AmbientsValueExpression {
-  constructor (astNode) {
-    this._literal = astNode
-  }
-
-  toAlgebra() {
-    const algebra = `${typeof this._literal.value}[${this._literal.value}[]]`
+const literal = (value) => ({
+  toAlgebra: () => {
+    const algebra = `${typeof value}[${value}[]]`
     return algebra
   }
-}
+})
 
-class AmbientsFunctionBody {
-  constructor (astNode) {
-    this._expression = new AmbientsValueExpression(astNode.body)
-  }
-
-  toAlgebra() {
+const functionBody = (args, expression) => ({
+  toAlgebra: () => {
     const algebra = `in_ call.open call.(
-      ${this._expression.toAlgebra()}|
+      ${expression.toAlgebra()}|
       open return.open_)`
     return algebra
   }
-}
-class AmbientsFunction {
-  constructor (name, body) {
-    this._name = name
-    this._body = body
-  }
+})
 
-  toAlgebra() {
-    const algebra = `${this._name}[${this._body.toAlgebra()}]`
+const functionDefinition = (name, body) => ({
+  toAlgebra: () => {
+    const algebra = `${name}[${body.toAlgebra()}]`
     return algebra
   }
-}
+})
 
 const convertDeclaration = (astNode) => {
   switch (astNode.type) {
@@ -43,25 +30,22 @@ const convertDeclaration = (astNode) => {
     case 'VariableDeclarator':
       switch (astNode.init.type) {
         case 'ArrowFunctionExpression':
-          return new AmbientsFunction(astNode.id.name, new AmbientsFunctionBody(astNode.init))
+          return functionDefinition(astNode.id.name,functionBody(astNode.init, literal(astNode.init.body.value)))
       }
   }
 }
 
-class Program {
-  constructor (astNode) {
-    this.declarations = astNode.body.map(convertDeclaration)
-  }
-
-  toAlgebra() {
-    return this.declarations
+const programFile = (declarations, resultStatement) => ({
+  toAlgebra: () => {
+    const algebra = declarations
       .reduce((acc,x) => acc.concat(x), [])
       .filter(x => x !== undefined)
       .map(declaration => declaration.toAlgebra())
       .map(code => code.replace(/\r?\n\s*|\r\s*/g, '').replace(/\s+/g, ' '))
       .join("|")
+    return algebra
   }
-}
+})
 
 module.exports = function (js) {
 
@@ -74,6 +58,6 @@ module.exports = function (js) {
   }
 
   const node = esprima.parseScript(js, {}, log(js))
-  return new Program(node).toAlgebra()
+  return programFile(node.body.map(convertDeclaration), null).toAlgebra()
 
 }
