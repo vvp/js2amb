@@ -35,15 +35,6 @@ const binaryExpression = (left, right, operator) => {
 const callExpression = (functionName) => ({
   toAmbient: (scope) => {
     return scope.functionCall(functionName)
-
-    /* let scopesToPass = scope.allow('call', functionName)
-    let outCalls = scopesToPass.map(x => `out ${x}.`)
-    let inReturns = scopesToPass.reverse().map(x => `in ${x}.`)
-    const algebra = `
-      call[${outCalls}in ${functionName}.open_.return[open_.${inReturns}in func]]|
-      func[in_ ${functionName}.open ${functionName}.open_]|
-      open func`
-    return algebra */
   }
 })
 
@@ -53,9 +44,6 @@ const functionBody = (args, expression) => ({
     return scope.seq('in_ call.open call', scope.parallel(
       expression.toAmbient(scope),
       'open return.open_'))
-    /*const algebra = `in_ call.open call.(
-      ${[expression.toAlgebra(scope), 'open return.open_'].join('|')})`
-    return algebra*/
   }
 })
 
@@ -66,10 +54,6 @@ const functionDefinition = (name, body) => ({
       newScope.capabilities(),
       newScope.parallel(body.toAmbient(newScope))
     )
-
-    /*const algebra = `${name}[
-    ${[body.toAlgebra(newScope), newScope.toAlgebra()].filter(s => s.length > 0).join('|')}]`
-    return algebra*/
   }
 })
 
