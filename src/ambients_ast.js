@@ -68,8 +68,7 @@ const programFile = (declarations, resultStatement) => ({
 })
 
 class Sequential {
-  constructor (scope, args) {
-    this._scope = scope
+  constructor (args) {
     this._args = args
   }
 
@@ -79,8 +78,7 @@ class Sequential {
 }
 
 class Parallel {
-  constructor (scope, args) {
-    this._scope = scope
+  constructor (args) {
     this._args = args
   }
 
@@ -120,8 +118,7 @@ const toAlgebra = (node) => {
 const nonEmptyExpressions = string => string.length > 0
 
 class Ambient {
-  constructor (scope, name, args) {
-    this._scope = scope
+  constructor (name, args) {
     this._args = args
     this._name = name
   }
@@ -139,7 +136,7 @@ class Scope {
   }
 
   ambient (name, ...args) {
-    return new Ambient(this, name, args)
+    return new Ambient(name, args)
   }
 
   registerArgs () {
@@ -161,11 +158,11 @@ class Scope {
   }
 
   seq (...args) {
-    return new Sequential(this, args)
+    return new Sequential(args)
   }
 
   parallel (...args) {
-    return new Parallel(this, args)
+    return new Parallel(args)
   }
 
   newScope (name) {
