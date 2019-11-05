@@ -34,43 +34,103 @@ const binaryExpression = (left, right, operator) => {
 
 const callExpression = (functionName) => ({
   toAlgebra: (scope) => {
-    let scopesToPass = scope.allow('call', functionName)
+    return scope.functionCall(functionName)
+
+    /* let scopesToPass = scope.allow('call', functionName)
     let outCalls = scopesToPass.map(x => `out ${x}.`)
     let inReturns = scopesToPass.reverse().map(x => `in ${x}.`)
     const algebra = `
       call[${outCalls}in ${functionName}.open_.return[open_.${inReturns}in func]]|
       func[in_ ${functionName}.open ${functionName}.open_]|
       open func`
-    return algebra
+    return algebra */
   }
 })
 
 const functionBody = (args, expression) => ({
   toAlgebra: (scope) => {
-    const algebra = `in_ call.open call.(
+    scope.registerArgs(args)
+    return scope.seq('in_ call.open call', scope.parallel(
+      expression.toAlgebra(scope),
+      'open return.open_'))
+    /*const algebra = `in_ call.open call.(
       ${[expression.toAlgebra(scope), 'open return.open_'].join('|')})`
-    return algebra
+    return algebra*/
   }
 })
 
 const functionDefinition = (name, body) => ({
   toAlgebra: (scope) => {
     let newScope = scope.newScope(name)
-    const algebra = `${name}[
+    return newScope.ambient(name,
+      newScope.capabilities(),
+      newScope.parallel(body.toAlgebra(newScope))
+    )
+
+    /*const algebra = `${name}[
     ${[body.toAlgebra(newScope), newScope.toAlgebra()].filter(s => s.length > 0).join('|')}]`
-    return algebra
+    return algebra*/
   }
 })
 
 const programFile = (declarations, resultStatement) => ({
   toAlgebra: (scope) => {
     const algebra = declarations
-      .map(declaration => declaration.toAlgebra(scope))
+      .map(declaration => declaration.toAlgebra(scope).toAlgebra())
       .map(code => code.replace(/\r?\n\s*|\r\s*/g, '').replace(/\s+/g, ' '))
       .join('|')
     return algebra
   }
 })
+
+
+class Sequential {
+  constructor (scope, args) {
+    this._scope = scope
+    this._args = args
+  }
+
+  toAlgebra() {
+    return this._args.map(toAlgebra).join('.')
+  }
+}
+
+class Parallel {
+  constructor (scope, args) {
+    this._scope = scope
+    this._args = args
+  }
+
+  toAlgebra() {
+    let parallelPrograms = this._args.map(toAlgebra).filter(str => str.length > 0)
+    if (parallelPrograms.length > 1) {
+      parallelPrograms = parallelPrograms.map(x => x.charAt(0) === '(' ? x.substring(1, x.length-1) : x)
+      return `(${parallelPrograms.join('|')})`
+    }
+
+    return parallelPrograms.join('|')
+  }
+
+}
+
+const toAlgebra = (node) => {
+  if (node.toAlgebra === undefined)
+    return node.toString()
+
+  return node.toAlgebra()
+}
+
+class Ambient {
+  constructor (scope, name, args) {
+    this._scope = scope
+    this._args = args
+    this._name = name
+  }
+
+  toAlgebra() {
+    return `${this._name}[${this._args.map(toAlgebra).join('|')}]`
+  }
+}
 
 class Scope {
   constructor (name, parentScope) {
@@ -79,12 +139,46 @@ class Scope {
     this._auths = []
   }
 
+  ambient(name, ...args) {
+    return new Ambient(this, name, args)
+  }
+
+  registerArgs() {
+
+  }
+
+  functionCall(functionName) {
+    let scopesToPass = this.allow('call', functionName)
+    let outCalls = scopesToPass.map(x => `out ${x}.`)
+    let inReturns = scopesToPass.reverse().map(x => `in ${x}.`)
+
+    return this.parallel(
+      this.ambient('call',
+        this.seq(`${outCalls}in ${functionName}.open_`,
+          this.ambient('return', `open_.${inReturns}in func`))),
+      this.ambient('func',
+        this.seq(`in_ ${functionName}.open ${functionName}.open_`)),
+      'open func')
+  }
+
+  seq(...args) {
+    return new Sequential(this, args)
+  }
+
+  parallel(...args) {
+    return new Parallel(this, args)
+  }
+
   newScope (name) {
     return new Scope(name, this)
   }
 
-  toAlgebra () {
-    return this._auths.map((auth) => `out_ ${auth.exit}.in_ ${auth.enter}`).join('|')
+  capabilities() {
+    return {
+      toAlgebra: () => {
+        return this._auths.map((auth) => `out_ ${auth.exit}.in_ ${auth.enter}`).join('|')
+      }
+    }
   }
 
   allow (exit, enter) {

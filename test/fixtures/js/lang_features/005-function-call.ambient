@@ -1,13 +1,17 @@
-call[in a.open_.return[open_.in func]]|
-func[in_ a.open a.open_]|
-open func|
-b[
-  call[
-    out b.in a.open_.return[open_.in b.in func]
-  ]|
+(
+  call[in a.open_.return[open_.in func]]|
   func[in_ a.open a.open_]|
-  open func|
-  out_ call.in_ a
+  open func
+)|
+b[
+  out_ call.in_ a|
+  (
+    call[
+      out b.in a.open_.return[open_.in b.in func]
+    ]|
+    func[in_ a.open a.open_]|
+    open func
+  )
 ]
 
 
