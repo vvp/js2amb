@@ -83,15 +83,14 @@ const programFile = (declarations, resultStatement) => ({
   }
 })
 
-
 class Sequential {
   constructor (scope, args) {
     this._scope = scope
     this._args = args
   }
 
-  toAlgebra() {
-    return this._args.map(toAlgebra).join('.')
+  toAlgebra () {
+    return this._args.map(optimizeStep).map(toAlgebra).filter(nonEmptyExpressions).join('.')
   }
 }
 
@@ -101,16 +100,30 @@ class Parallel {
     this._args = args
   }
 
-  toAlgebra() {
-    let parallelPrograms = this._args.map(toAlgebra).filter(str => str.length > 0)
+  optimize () {
+    const parallelArgs = this._args.filter(arg => arg instanceof Parallel)
+    if (parallelArgs.length === this._args.length) {
+      this._args = parallelArgs.map(arg => arg._args).reduce((arr, a) => arr.concat(a), [])
+    }
+    return this
+  }
+
+  toAlgebra () {
+    let parallelPrograms = this._args.map(optimizeStep).map(toAlgebra).filter(nonEmptyExpressions)
     if (parallelPrograms.length > 1) {
-      parallelPrograms = parallelPrograms.map(x => x.charAt(0) === '(' ? x.substring(1, x.length-1) : x)
       return `(${parallelPrograms.join('|')})`
     }
 
     return parallelPrograms.join('|')
   }
 
+}
+
+const optimizeStep = (node) => {
+  if (node.optimize === undefined)
+    return node
+
+  return node.optimize()
 }
 
 const toAlgebra = (node) => {
@@ -120,6 +133,8 @@ const toAlgebra = (node) => {
   return node.toAlgebra()
 }
 
+const nonEmptyExpressions = string => string.length > 0
+
 class Ambient {
   constructor (scope, name, args) {
     this._scope = scope
@@ -127,8 +142,8 @@ class Ambient {
     this._name = name
   }
 
-  toAlgebra() {
-    return `${this._name}[${this._args.map(toAlgebra).join('|')}]`
+  toAlgebra () {
+    return `${this._name}[${this._args.map(optimizeStep).map(toAlgebra).filter(nonEmptyExpressions).join('|')}]`
   }
 }
 
@@ -139,15 +154,15 @@ class Scope {
     this._auths = []
   }
 
-  ambient(name, ...args) {
+  ambient (name, ...args) {
     return new Ambient(this, name, args)
   }
 
-  registerArgs() {
+  registerArgs () {
 
   }
 
-  functionCall(functionName) {
+  functionCall (functionName) {
     let scopesToPass = this.allow('call', functionName)
     let outCalls = scopesToPass.map(x => `out ${x}.`)
     let inReturns = scopesToPass.reverse().map(x => `in ${x}.`)
@@ -161,11 +176,11 @@ class Scope {
       'open func')
   }
 
-  seq(...args) {
+  seq (...args) {
     return new Sequential(this, args)
   }
 
-  parallel(...args) {
+  parallel (...args) {
     return new Parallel(this, args)
   }
 
@@ -173,7 +188,7 @@ class Scope {
     return new Scope(name, this)
   }
 
-  capabilities() {
+  capabilities () {
     return {
       toAlgebra: () => {
         return this._auths.map((auth) => `out_ ${auth.exit}.in_ ${auth.enter}`).join('|')
