@@ -2,25 +2,25 @@ let primitives = {}
 primitives.string = {
   literal: (value) => ({
     type: 'string',
-    toAlgebra: (scope) => `string[${value}[]]`
+    toAmbient: (scope) => `string[${value}[]]`
   }),
   plus: (left, right) => ({
     type: 'string',
-    toAlgebra: (scope) => `string[concat[left[${left.toAlgebra(scope)}]|right[${right.toAlgebra(scope)}]]]`
+    toAmbient: (scope) => `string[concat[left[${left.toAmbient(scope)}]|right[${right.toAmbient(scope)}]]]`
   })
 }
 primitives.number = {
   literal: (value) => ({
     type: 'number',
-    toAlgebra: (scope) => `int[i${value}[]]`
+    toAmbient: (scope) => `int[i${value}[]]`
   }),
   plus: (left, right) => ({
     type: 'number',
-    toAlgebra: (scope) => `int[plus[left[${left.toAlgebra(scope)}]|right[${right.toAlgebra(scope)}]]]`
+    toAmbient: (scope) => `int[plus[left[${left.toAmbient(scope)}]|right[${right.toAmbient(scope)}]]]`
   }),
   multiply: (left, right) => ({
     type: 'number',
-    toAlgebra: (scope) => `int[multiply[left[${left.toAlgebra(scope)}]|right[${right.toAlgebra(scope)}]]]`
+    toAmbient: (scope) => `int[multiply[left[${left.toAmbient(scope)}]|right[${right.toAmbient(scope)}]]]`
   })
 }
 

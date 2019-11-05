@@ -17,5 +17,5 @@ module.exports = function (js) {
   mapper.register('ExpressionStatement', (node) => mapper.lookup((node.expression)))
   mapper.register('Program', (node) => ast.programFile(mapper.lookup(node.body)))
   let program = mapper.parseAndMap(js)
-  return program.toAlgebra(rootScope)
+  return program.toAmbient(rootScope)
 }

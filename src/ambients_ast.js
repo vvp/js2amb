@@ -33,7 +33,7 @@ const binaryExpression = (left, right, operator) => {
 }
 
 const callExpression = (functionName) => ({
-  toAlgebra: (scope) => {
+  toAmbient: (scope) => {
     return scope.functionCall(functionName)
 
     /* let scopesToPass = scope.allow('call', functionName)
@@ -48,10 +48,10 @@ const callExpression = (functionName) => ({
 })
 
 const functionBody = (args, expression) => ({
-  toAlgebra: (scope) => {
+  toAmbient: (scope) => {
     scope.registerArgs(args)
     return scope.seq('in_ call.open call', scope.parallel(
-      expression.toAlgebra(scope),
+      expression.toAmbient(scope),
       'open return.open_'))
     /*const algebra = `in_ call.open call.(
       ${[expression.toAlgebra(scope), 'open return.open_'].join('|')})`
@@ -60,11 +60,11 @@ const functionBody = (args, expression) => ({
 })
 
 const functionDefinition = (name, body) => ({
-  toAlgebra: (scope) => {
+  toAmbient: (scope) => {
     let newScope = scope.newScope(name)
     return newScope.ambient(name,
       newScope.capabilities(),
-      newScope.parallel(body.toAlgebra(newScope))
+      newScope.parallel(body.toAmbient(newScope))
     )
 
     /*const algebra = `${name}[
@@ -74,9 +74,9 @@ const functionDefinition = (name, body) => ({
 })
 
 const programFile = (declarations, resultStatement) => ({
-  toAlgebra: (scope) => {
+  toAmbient: (scope) => {
     const algebra = declarations
-      .map(declaration => declaration.toAlgebra(scope).toAlgebra())
+      .map(declaration => declaration.toAmbient(scope).toAlgebra())
       .map(code => code.replace(/\r?\n\s*|\r\s*/g, '').replace(/\s+/g, ' '))
       .join('|')
     return algebra
