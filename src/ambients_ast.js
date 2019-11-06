@@ -1,7 +1,7 @@
 const { literal, verifyPrimitive } = require('./primitives.js')
 const { ambient, seq, parallel } = require('./algebra_ast.js')
 
-const variable = (name) => ({
+const parameterDeclaration = (name) => ({
   toAmbient: (scope) => {
     return ambient(name, 'in_ arg.open arg.open_')
   }
@@ -113,6 +113,6 @@ module.exports = {
   functionDefinition,
   programFile,
   callExpression,
-  variable,
+  parameterDeclaration,
   variableExpression
 }
