@@ -4,6 +4,7 @@ const seq = (...args) => ({
 
 const parallel = (...args) => ({
   type: 'parallel',
+  args: args,
   optimize: () => {
     const parallelArgs = args.filter(arg => arg.type === 'parallel')
     if (parallelArgs.length === args.length) {
