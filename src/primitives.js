@@ -24,4 +24,23 @@ primitives.number = {
   })
 }
 
-module.exports = primitives
+const literal = (value) => {
+  let primitive = primitives[typeof value]
+  if (primitive === undefined || primitive.literal === undefined) {
+    throw new Error(`primitive '${typeof value}' is not supported as literal`)
+  }
+  return primitive.literal(value)
+}
+
+const verifyPrimitive = (left, right) => {
+  let primitive = primitives[left.type]
+  if (primitive === undefined || primitive.literal === undefined) {
+    throw new Error(`primitive '${left.type}' is not supported for plus-operator`)
+  }
+  if (left.type !== right.type) {
+    throw new Error(`Compiler does not support implicit type conversions for binary ops`)
+  }
+  return primitive
+}
+
+module.exports = {literal, verifyPrimitive}
