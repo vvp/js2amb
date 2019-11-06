@@ -41,7 +41,7 @@ const callExpression = (functionName) => ({
 const functionBody = (args, expression) => ({
   toAmbient: (scope) => {
     scope.registerArgs(args)
-    return scope.seq('in_ call.open call', scope.parallel(
+    return seq('in_ call.open call', parallel(
       expression.toAmbient(scope),
       'open return.open_'))
   }
@@ -50,9 +50,9 @@ const functionBody = (args, expression) => ({
 const functionDefinition = (name, body) => ({
   toAmbient: (scope) => {
     let newScope = scope.newScope(name)
-    return newScope.ambient(name,
+    return ambient(name,
       newScope.capabilities(),
-      newScope.parallel(body.toAmbient(newScope))
+      parallel(body.toAmbient(newScope))
     )
   }
 })
@@ -67,31 +67,22 @@ const programFile = (declarations, resultStatement) => ({
   }
 })
 
-class Sequential {
-  constructor (args) {
-    this._args = args
-  }
 
-  toAlgebra () {
-    return this._args.map(optimizeStep).map(toAlgebra).filter(nonEmptyExpressions).join('.')
-  }
-}
+const seq = (...args) => ({
+  toAlgebra: () => args.map(optimizeStep).map(toAlgebra).filter(nonEmptyExpressions).join('.')
+})
 
-class Parallel {
-  constructor (args) {
-    this._args = args
-  }
-
-  optimize () {
-    const parallelArgs = this._args.filter(arg => arg instanceof Parallel)
-    if (parallelArgs.length === this._args.length) {
-      this._args = parallelArgs.map(arg => arg._args).reduce((arr, a) => arr.concat(a), [])
+const parallel = (...args) => ({
+  type: 'parallel',
+  optimize: () => {
+    const parallelArgs = args.filter(arg => arg.type === 'parallel')
+    if (parallelArgs.length === args.length) {
+      return parallel(...parallelArgs.map(arg => arg.args).reduce((arr, a) => arr.concat(a), []))
     }
-    return this
-  }
-
-  toAlgebra () {
-    let parallelPrograms = this._args.map(optimizeStep).map(toAlgebra).filter(nonEmptyExpressions)
+    return parallel(...args)
+  },
+  toAlgebra: () => {
+    let parallelPrograms = args.map(optimizeStep).map(toAlgebra).filter(nonEmptyExpressions)
     if (parallelPrograms.length > 1) {
       return `(${parallelPrograms.join('|')})`
     }
@@ -99,44 +90,26 @@ class Parallel {
     return parallelPrograms.join('|')
   }
 
-}
+})
 
-const optimizeStep = (node) => {
-  if (node.optimize === undefined)
-    return node
+const ambient = (name, ...args) => ({
+  toAlgebra: () => {
+    return `${name}[${args.map(optimizeStep).map(toAlgebra).filter(nonEmptyExpressions).join('|')}]`
+  }
+})
 
-  return node.optimize()
-}
-
-const toAlgebra = (node) => {
-  if (node.toAlgebra === undefined)
-    return node.toString()
-
-  return node.toAlgebra()
-}
-
+const optimizeStep = node => node.optimize === undefined ? node : node.optimize()
+const toAlgebra = node => node.toAlgebra === undefined ? node.toString() : node.toAlgebra()
 const nonEmptyExpressions = string => string.length > 0
 
-class Ambient {
-  constructor (name, args) {
-    this._args = args
-    this._name = name
-  }
 
-  toAlgebra () {
-    return `${this._name}[${this._args.map(optimizeStep).map(toAlgebra).filter(nonEmptyExpressions).join('|')}]`
-  }
-}
+
 
 class Scope {
   constructor (name, parentScope) {
     this._name = name
     this._parentScope = parentScope
     this._auths = []
-  }
-
-  ambient (name, ...args) {
-    return new Ambient(name, args)
   }
 
   registerArgs () {
@@ -148,21 +121,13 @@ class Scope {
     let outCalls = scopesToPass.map(x => `out ${x}.`)
     let inReturns = scopesToPass.reverse().map(x => `in ${x}.`)
 
-    return this.parallel(
-      this.ambient('call',
-        this.seq(`${outCalls}in ${functionName}.open_`,
-          this.ambient('return', `open_.${inReturns}in func`))),
-      this.ambient('func',
-        this.seq(`in_ ${functionName}.open ${functionName}.open_`)),
+    return parallel(
+      ambient('call',
+        seq(`${outCalls}in ${functionName}.open_`,
+          ambient('return', `open_.${inReturns}in func`))),
+      ambient('func',
+        seq(`in_ ${functionName}.open ${functionName}.open_`)),
       'open func')
-  }
-
-  seq (...args) {
-    return new Sequential(args)
-  }
-
-  parallel (...args) {
-    return new Parallel(args)
   }
 
   newScope (name) {
