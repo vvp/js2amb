@@ -1,7 +1,16 @@
-const {literal, verifyPrimitive} = require('./primitives.js')
-const {ambient, seq, parallel} = require('./algebra_ast.js')
+const { literal, verifyPrimitive } = require('./primitives.js')
+const { ambient, seq, parallel } = require('./algebra_ast.js')
 
-
+const variable = (name) => ({
+  toAmbient: (scope) => {
+    return ambient(name, 'in_ arg.open arg.open_')
+  }
+})
+const variableExpression = (name) => ({
+  toAmbient: (scope) => {
+    return `open ${name}`
+  }
+})
 const binaryExpression = (left, right, operator) => {
   let primitive = verifyPrimitive(left, right)
   switch (operator) {
@@ -23,8 +32,8 @@ const callExpression = (functionName) => ({
 
 const functionBody = (args, expression) => ({
   toAmbient: (scope) => {
-    scope.registerArgs(args)
     return seq('in_ call.open call', parallel(
+      scope.functionArgs(args),
       expression.toAmbient(scope),
       'open return.open_'))
   }
@@ -50,11 +59,6 @@ const programFile = (declarations, resultStatement) => ({
   }
 })
 
-
-
-
-
-
 class Scope {
   constructor (name, parentScope) {
     this._name = name
@@ -62,8 +66,8 @@ class Scope {
     this._auths = []
   }
 
-  registerArgs () {
-
+  functionArgs (args) {
+    return parallel(...args.map(arg => arg.toAmbient(this)))
   }
 
   functionCall (functionName) {
@@ -101,4 +105,14 @@ class Scope {
   }
 }
 
-module.exports = { Scope, literal, binaryExpression, functionBody, functionDefinition, programFile, callExpression }
+module.exports = {
+  Scope,
+  literal,
+  binaryExpression,
+  functionBody,
+  functionDefinition,
+  programFile,
+  callExpression,
+  variable,
+  variableExpression
+}

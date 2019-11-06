@@ -5,6 +5,9 @@ const astMapper = () => ({
   register: function (nodetype, func) {
     this.mappers[nodetype] = func
   },
+  directMap: function(node, astNode) {
+    this.lookupMap.set(node, astNode)
+  },
   lookupMap: new WeakMap(),
   lookup: function (node) {
     if (Array.isArray(node)) {
