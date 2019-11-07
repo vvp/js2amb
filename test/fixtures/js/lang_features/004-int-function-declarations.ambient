@@ -54,8 +54,36 @@ e[
     open return.open_)]|
 f[
   in_ call.open call.(
-    x[in_ arg.open arg.open_]|
-    open x|
+    (
+      x[in_ arg.open arg.open_]|
+      open x
+    )|
     open return.open_)
+]|
+g[
+  in_ call.open call.(
+      func[
+        (
+          x[in_ arg.open arg.open_]|
+          open x
+        )|
+        open_
+      ]|
+      open return.open_)
+]|
+h[
+  in_ call.open call.(
+      func[
+        func[
+          (
+            x[in_ arg.open arg.open_]|
+            open x
+          )|
+          open_
+        ]|
+        open_
+      ]|
+      open return.open_)
 ]
+
 

@@ -32,19 +32,34 @@ const callExpression = (functionName) => ({
 
 const functionBody = (args, expression) => ({
   toAmbient: (scope) => {
-    return seq('in_ call.open call', parallel(
+    return parallel(
       scope.functionArgs(args),
-      expression.toAmbient(scope),
-      'open return.open_'))
-  }
+      expression.toAmbient(scope))
+  },
+  type: 'functionexpression',
+  returnsFunction: expression.type === 'functionexpression'
 })
 
 const functionDefinition = (name, body) => ({
   toAmbient: (scope) => {
     let newScope = scope.newScope(name)
+    if (body.returnsFunction) {
+      return ambient(name,
+        newScope.capabilities(),
+        seq('in_ call.open call', parallel(ambient('func',
+          body.toAmbient(newScope),
+          'open_'),
+          'open return.open_'
+        ))
+      )
+    }
+
     return ambient(name,
       newScope.capabilities(),
-      parallel(body.toAmbient(newScope))
+      seq('in_ call.open call', parallel(
+        body.toAmbient(newScope),
+        'open return.open_'
+      ))
     )
   }
 })
