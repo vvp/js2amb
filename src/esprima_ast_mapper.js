@@ -2,7 +2,7 @@ const esprima = require('esprima')
 
 const astMapper = () => ({
   mappers: {},
-  register: function (nodetype, func) {
+  match: function (nodetype, func) {
     this.mappers[nodetype] = func
   },
   directMap: function(node, func) {
