@@ -30,6 +30,14 @@ const callExpression = (functionName) => ({
   }
 })
 
+const funcEnvelope = (expression) => ({
+  toAmbient: (scope) => {
+    return ambient('func',
+      expression.toAmbient(scope),
+      'open_')
+  }
+})
+
 const functionExpression = (args, expression) => ({
   toAmbient: (scope) => {
     return parallel(
@@ -116,5 +124,7 @@ module.exports = {
   programFile,
   callExpression,
   parameterDeclaration,
-  variableExpression
+  variableExpression,
+  funcEnvelope
+
 }

@@ -15,10 +15,20 @@ module.exports = function (js) {
   })
   jsAst.match('Literal', (node) => ast.literal(node.value))
   jsAst.match('BinaryExpression', (node) => ast.binaryExpression(jsAst.parse(node.left), jsAst.parse(node.right), node.operator))
-  jsAst.match('ArrowFunctionExpression', (node) =>
-    ast.functionExpression(
-      jsAst.parse(node.params, 'AFE.Params'),
-      jsAst.parse(node.body, 'AFE.Body')))
+  jsAst.match('ArrowFunctionExpression', (node, context) => {
+    switch (context) {
+      case 'AFE.Body':
+        return ast.funcEnvelope(
+          ast.functionExpression(
+          jsAst.parse(node.params, 'AFE.Params'),
+          jsAst.parse(node.body, 'AFE.Body')))
+      default:
+        return ast.functionExpression(
+          jsAst.parse(node.params, 'AFE.Params'),
+          jsAst.parse(node.body, 'AFE.Body'))
+    }
+  })
+
   jsAst.match('VariableDeclarator', (node) => ast.functionDefinition(node.id.name, jsAst.parse(node.init)))
   jsAst.match('VariableDeclaration', (node) => jsAst.parse(node.declarations))
 
