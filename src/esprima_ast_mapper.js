@@ -5,37 +5,27 @@ const astMapper = () => ({
   match: function (nodetype, func) {
     this.mappers[nodetype] = func
   },
-  directMap: function(node, func) {
-    if (Array.isArray(node)) {
-      node.forEach(n => this.directMap(n, func))
-    }
-    else {
-      this.lookupMap.set(node, func(node))
-    }
-  },
-  lookupMap: new WeakMap(),
-  lookup: function (node) {
+  parse: function (node, context) {
     if (Array.isArray(node)) {
       return node
-        .map((n) => this.lookupMap.get(n))
+        .map((n) => this.parse(n, context))
+        .filter(x => x)
         .reduce((acc, x) => acc.concat(x), [])
     }
-    return this.lookupMap.get(node)
+    let mappingFunc = this.mappers[node.type]
+    if (mappingFunc === undefined)
+      return undefined
+
+    return mappingFunc(node, context)
   },
   parseAndMap: function (js) {
     let counter = 0
-    let latestNode
     let esprimaMapper = (node, meta) => {
       console.log(`${++counter}: ${node.type} (${js.substring(meta.start.offset, meta.end.offset)}) - (${Object.keys(node)})`)
-      const mapFunc = this.mappers[node.type]
-      if (mapFunc === undefined)
-        return
-      latestNode = mapFunc(node)
-      this.lookupMap.set(node, latestNode)
     }
-    esprima.parseScript(js, {}, esprimaMapper)
-    return latestNode
+    return this.parse(esprima.parseScript(js, {}, esprimaMapper))
   }
 })
+
 
 module.exports = astMapper
