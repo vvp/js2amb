@@ -1,0 +1,6 @@
+a[
+  write_ (init).(
+    :init|
+    write_ (x).read_ (x)
+  )
+]

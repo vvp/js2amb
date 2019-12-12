@@ -21,17 +21,22 @@ const testFixtures = (path, tests) => {
     const expectedAmbient = normalizeAmbientsCode(fs.readFileSync(path + filePair.ambient).toString())
     it(`${tests}: ${filePair.js}`, () => {
 
+      let actual = js2amb(javascript)
       assert.strictEqual(
-        js2amb(javascript),
+        actual,
         expectedAmbient,
         `Compiling ${filePair.js} didn't result in ${filePair.ambient}`
       )
+      console.log(`JS:       ${normalizeAmbientsCode(javascript)}`)
+      console.log(`actual:   ${actual}`)
+      console.log(`expected: ${expectedAmbient}`)
     })
 
   })
 }
 
 describe('JS Compiler', function () {
-  testFixtures(FIXTURES_PATH + 'lang_features/','language concepts')
-  testFixtures(FIXTURES_PATH + 'abstractions/', 'computation abstractions')
+  testFixtures(FIXTURES_PATH + 'new_encoding/', 'new encoding')
+  // testFixtures(FIXTURES_PATH + 'lang_features/','language concepts')
+  // testFixtures(FIXTURES_PATH + 'abstractions/', 'computation abstractions')
 })

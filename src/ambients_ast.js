@@ -3,12 +3,12 @@ const { ambient, seq, parallel } = require('./algebra_ast.js')
 
 const parameterDeclaration = (name) => ({
   toAmbient: (scope) => {
-    return ambient(name, 'in_ arg.open arg.open_')
+    return `write_ (${name})`
   }
 })
 const variableExpression = (name) => ({
   toAmbient: (scope) => {
-    return `open ${name}`
+    return `read_ (${name})`
   }
 })
 const binaryExpression = (left, right, operator) => {
@@ -40,7 +40,7 @@ const funcEnvelope = (expression) => ({
 
 const functionExpression = (args, expression) => ({
   toAmbient: (scope) => {
-    return parallel(
+    return seq(
       scope.functionArgs(args),
       expression.toAmbient(scope))
   }
@@ -51,9 +51,9 @@ const functionDefinition = (name, body) => ({
     let newScope = scope.newScope(name)
     return ambient(name,
       newScope.capabilities(),
-      seq('in_ call.open call', parallel(
-        body.toAmbient(newScope),
-        'open return.open_'
+      seq('write_ (init)', parallel(
+        ':init',
+        body.toAmbient(newScope)
       ))
     )
   }
