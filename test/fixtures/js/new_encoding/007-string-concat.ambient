@@ -80,4 +80,25 @@ d[
       read_ (string)
     )
   )
+]|
+e[
+  write_ (init).(
+    :init|
+    write_ (x, y).(
+      string[
+        plus[
+          l[
+            string[
+              plus[
+                l[string[hello[]]]|
+                r[x[]]
+              ]
+            ]
+          ]|
+          r[y[]]
+        ]
+      ]|
+      read_ (string)
+    )
+  )
 ]
