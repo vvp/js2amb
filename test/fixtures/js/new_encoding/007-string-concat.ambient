@@ -25,4 +25,27 @@ b[
       read_ (string)
     )
   )
+]|
+c[
+  write_ (init).(
+    :init|
+    write_ (x).(
+      string[
+        plus[
+          l[
+            string[
+              plus[
+                l[string[hello[]]]|
+                r[x[]]
+              ]
+            ]
+          ]|
+          r[
+            string[again[]]
+          ]
+        ]
+      ]|
+      read_ (string)
+    )
+  )
 ]
