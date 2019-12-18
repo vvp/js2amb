@@ -37,7 +37,7 @@ module.exports = function (js) {
   jsAst.match('VariableDeclarator', (node) => new functionDefinition(node.id.name, jsAst.parse(node.init)))
   jsAst.match('VariableDeclaration', (node) => jsAst.parse(node.declarations))
 
-  jsAst.match('CallExpression', (node) => new callExpression(node.callee.name))
+  jsAst.match('CallExpression', (node) => new callExpression(node.callee.name, node.arguments.map(id => id.name)))
   jsAst.match('ExpressionStatement', (node) => jsAst.parse(node.expression))
   jsAst.match('Program', (node) => new programFile(jsAst.parse(node.body)))
 

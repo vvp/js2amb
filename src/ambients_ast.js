@@ -18,7 +18,12 @@ function returnExpression(expr) {
   this.toAmbient = () => {
     if (this.expr instanceof variableExpression)
       return `read_ (${this.expr.name})`
-
+    if (this.expr instanceof callExpression) {
+      return seq(this.expr.toAmbient(), parallel(
+        ambient(this.expr.callId),
+        `read_ (${this.expr.callId})`
+      ))
+    }
     return parallel(
       this.expr.toAmbient(),
       `read_ (${this.expr.name})`
@@ -45,10 +50,17 @@ function binaryExpression (left, right, operator) {
 
 }
 
-function callExpression (functionName) {
+let callCounter = 0
+
+function callExpression (functionName, args) {
   this.functionName = functionName
+  this.args = args
+  this.callId = `${this.functionName}_r${callCounter++}`
   this.toAmbient =  () => {
-    return "scope.functionCall(this.functionName)"
+    return seq(
+      `write (${this.functionName}, ${args.join(', ')})`,
+      `read_ (${this.functionName}, ${this.callId})`
+    )
   }
 }
 
