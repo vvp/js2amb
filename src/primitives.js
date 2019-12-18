@@ -3,7 +3,6 @@ const types = require('./types.js')
 let primitives = {}
 
 primitives.string = {
-  name: 'string',
   literal: (value) => ({
     type: types.toValueType(value,'string'),
     toAmbient: () => `string[${value}[]]`
@@ -14,7 +13,6 @@ primitives.string = {
   })
 }
 primitives.number = {
-  name: 'int',
   literal: (value) => ({
     type: 'number',
     toAmbient: (scope) => `int[i${value}[]]`
@@ -39,7 +37,8 @@ function literal (value) {
 
 const verifyPrimitive = (left, right) => {
   let type = types.intersection(left.type, right.type)
-  return primitives[type.name]
+  Object.assign(type, primitives[type.name])
+  return type
 }
 
 module.exports = {literal, verifyPrimitive}

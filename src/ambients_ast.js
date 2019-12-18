@@ -28,14 +28,14 @@ function binaryExpression (left, right, operator) {
   this.left = left
   this.right = right
   this.operator = operator
-  this.primitive = verifyPrimitive(left, right)
-  this.name = this.primitive.name
+  this.type = verifyPrimitive(left, right)
+  this.name = this.type.name
   this.toAmbient = () => {
     switch (operator) {
       case '+':
-        return this.primitive.plus(left, right).toAmbient()
+        return this.type.plus(left, right).toAmbient()
       case '*':
-        return this.primitive.multiply(left, right).toAmbient()
+        return this.type.multiply(left, right).toAmbient()
       default:
         throw new Error(`Operator '${operator}' is not supported`)
     }

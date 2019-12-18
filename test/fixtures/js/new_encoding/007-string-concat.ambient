@@ -48,4 +48,36 @@ c[
       read_ (string)
     )
   )
+]|
+d[
+  write_ (init).(
+    :init|
+    write_ (x).(
+      string[
+        plus[
+          l[
+            string[
+              plus[
+                l[
+                  string[
+                    plus[
+                      l[
+                        string[hello[]]
+                      ]|
+                      r[x[]]
+                    ]
+                  ]
+                ]|
+                r[
+                  string[again[]]
+                ]
+              ]
+            ]
+          ]|
+          r[x[]]
+        ]
+      ]|
+      read_ (string)
+    )
+  )
 ]
