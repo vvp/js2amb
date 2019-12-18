@@ -8,18 +8,17 @@ function parameterDeclaration(names) {
 
 function variableExpression(name) {
   this.name = name
-  this.toAmbient = () => `read_ (${this.name})`
-  return `read_ (${this.name})`
+  this.toAmbient = () => `${this.name}[]`
 }
 
 function returnExpression(expr) {
   this.expr = expr
   this.toAmbient = () => {
     if (this.expr instanceof variableExpression)
-      return this.expr.toAmbient()
+      return `read_ (${this.expr.name})`
 
     return parallel(
-      expr.toAmbient(),
+      this.expr.toAmbient(),
       `read_ (${this.expr.name})`
     )
   }

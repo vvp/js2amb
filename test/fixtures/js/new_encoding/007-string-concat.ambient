@@ -11,4 +11,18 @@ a[
       read_ (string)
     )
   )
+]|
+b[
+  write_ (init).(
+    :init|
+    write_ (x).(
+      string[
+        plus[
+          l[string[hello[]]]|
+          r[x[]]
+        ]
+      ]|
+      read_ (string)
+    )
+  )
 ]

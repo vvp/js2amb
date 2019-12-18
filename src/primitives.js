@@ -1,12 +1,15 @@
+const types = require('./types.js')
+
 let primitives = {}
+
 primitives.string = {
   name: 'string',
   literal: (value) => ({
-    type: 'string',
+    type: types.toValueType(value,'string'),
     toAmbient: () => `string[${value}[]]`
   }),
   plus: (left, right) => ({
-    type: 'string',
+    type: types.intersection(left.type, right.type),
     toAmbient: () => `string[plus[l[${left.toAmbient()}]|r[${right.toAmbient()}]]]`
   })
 }
@@ -17,7 +20,7 @@ primitives.number = {
     toAmbient: (scope) => `int[i${value}[]]`
   }),
   plus: (left, right) => ({
-    type: 'number',
+    type: () => 'number',
     toAmbient: (scope) => `int[plus[l[${left.toAmbient(scope)}]|r[${right.toAmbient(scope)}]]]`
   }),
   multiply: (left, right) => ({
@@ -35,14 +38,8 @@ function literal (value) {
 }
 
 const verifyPrimitive = (left, right) => {
-  let primitive = primitives[left.type]
-  if (primitive === undefined || primitive.literal === undefined) {
-    throw new Error(`primitive '${left.type}' is not supported for plus-operator`)
-  }
-  if (left.type !== right.type) {
-    throw new Error(`Compiler does not support implicit type conversions for binary ops`)
-  }
-  return primitive
+  let type = types.intersection(left.type, right.type)
+  return primitives[type.name]
 }
 
 module.exports = {literal, verifyPrimitive}
