@@ -1,5 +1,6 @@
 const { literal, verifyPrimitive } = require('./primitives.js')
 const { ambient, seq, parallel } = require('./algebra_ast.js')
+const types = require('./types.js')
 
 function parameterDeclaration(names) {
   this.names = names
@@ -8,6 +9,7 @@ function parameterDeclaration(names) {
 
 function variableExpression(name) {
   this.name = name
+  this.type = types.toUnknownType(name)
   this.toAmbient = () => `${this.name}[]`
 }
 

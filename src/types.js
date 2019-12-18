@@ -1,24 +1,19 @@
-
-function ValueType(name) {
+function ValueType (name) {
   this.name = name
-  this.desc = `ValueType (${name})`
-  this.matches = (other) => (other instanceof ValueType && other.name === this.name) || other === undefined
+  this.desc = `${name}`
+  this.matches = (other) => (other instanceof ValueType && other.name === this.name) || other instanceof AnyType
 }
 
-function IntersectionType(first, second) {
-  this.name = `${first.name} | ${second.name}`
-  this.desc = `Intersection (${first.name} | ${second.name})`
+function IntersectionType (first, second) {
+  this.name = `${first.name} && ${second.name}`
+  this.desc = `(${first.desc} lub ${second.desc})` // least upper bound in type lattice
 }
 
-const verifyCommonType = (first, second, expected) => {
-  if (first.name === second.name) {
-    if (first.name === expected) {
-      return first
-    }
-  }
-  throw new Error(`Types '${first.desc}' and '${second.desc}' have no common type that matches '${expected}' `)
+function AnyType (variableName) {
+  this.name = variableName
+  this.desc = `(typeof ${this.name})`
+  this.matches = (other) => other instanceof AnyType ? other.name === this.name : true
 }
-
 
 const toValueType = (value, expected) => {
   if (typeof value === expected)
@@ -27,18 +22,25 @@ const toValueType = (value, expected) => {
   throw new Error(`Type of '${value}' is not '${expected}'`)
 }
 
+const toUnknownType = (name) => {
+  return new AnyType(name)
+}
 
+const isConcreteType = (type) => {
+  return !(type instanceof AnyType)
+}
 
 const intersection = (first, second) => {
-  if (first !== undefined && first.matches(second)) {
+  if (isConcreteType(first) && first.matches(second)) {
     return first
   }
-  if (second !== undefined && second.matches(first)) {
+  if (isConcreteType(second) && second.matches(first)) {
     return second
   }
   return new IntersectionType(first, second)
 }
 
-module.exports = { toValueType, verifyCommonType, intersection
+module.exports = {
+  toValueType, intersection, toUnknownType
 
 }

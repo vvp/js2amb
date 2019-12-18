@@ -37,7 +37,11 @@ function literal (value) {
 
 const verifyPrimitive = (left, right) => {
   let type = types.intersection(left.type, right.type)
-  Object.assign(type, primitives[type.name])
+  let supportedPrimitive = primitives[type.name]
+  if (supportedPrimitive === undefined)
+    throw new Error(`Binary operations of type '${type.desc} -> ${left.type.desc}' not supported yet`)
+
+  Object.assign(type, supportedPrimitive)
   return type
 }
 
