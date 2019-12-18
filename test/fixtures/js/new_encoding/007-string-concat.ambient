@@ -1,0 +1,14 @@
+a[
+  write_ (init).(
+    :init|
+    write_ ().(
+      string[
+        plus[
+          l[string[hello[]]]|
+          r[string[world[]]]
+        ]
+      ]|
+      read_ (string)
+    )
+  )
+]

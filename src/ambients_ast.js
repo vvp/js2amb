@@ -6,22 +6,34 @@ function parameterDeclaration(names) {
   this.toAmbient = () => `write_ (${this.names.join(', ')})`
 }
 
-function returnExpression(name) {
-  this.name = name
-  this.toAmbient = () => `read_ (${this.name})`
+function returnExpression(expr) {
+  this.expr = expr
+  this.toAmbient = () => {
+    if (this.expr instanceof returnExpression)
+      return this.expr.toAmbient()
+
+    if (typeof this.expr === 'string')
+      return `read_ (${this.expr})`
+
+    return parallel(
+      expr.toAmbient(),
+      `read_ (${this.expr.name})`
+    )
+  }
 
 }
 function binaryExpression (left, right, operator) {
   this.left = left
   this.right = right
   this.operator = operator
+  this.primitive = verifyPrimitive(left, right)
+  this.name = this.primitive.name
   this.toAmbient = () => {
-    let primitive = verifyPrimitive(left, right)
     switch (operator) {
       case '+':
-        return primitive.plus(left, right)
+        return this.primitive.plus(left, right).toAmbient()
       case '*':
-        return primitive.multiply(left, right)
+        return this.primitive.multiply(left, right).toAmbient()
       default:
         throw new Error(`Operator '${operator}' is not supported`)
     }

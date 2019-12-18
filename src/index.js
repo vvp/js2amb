@@ -29,7 +29,8 @@ module.exports = function (js) {
       default:
         return new functionExpression(
           new parameterDeclaration(node.params.map(id => id.name)),
-          jsAst.parse(node.body, 'AFE.Body'))
+          new returnExpression(jsAst.parse(node.body, 'AFE.Body'))
+        )
     }
   })
 

@@ -1,30 +1,32 @@
 let primitives = {}
 primitives.string = {
+  name: 'string',
   literal: (value) => ({
     type: 'string',
-    toAmbient: (scope) => `string[${value}[]]`
+    toAmbient: () => `string[${value}[]]`
   }),
   plus: (left, right) => ({
     type: 'string',
-    toAmbient: (scope) => `string[concat[left[${left.toAmbient(scope)}]|right[${right.toAmbient(scope)}]]]`
+    toAmbient: () => `string[plus[l[${left.toAmbient()}]|r[${right.toAmbient()}]]]`
   })
 }
 primitives.number = {
+  name: 'int',
   literal: (value) => ({
     type: 'number',
     toAmbient: (scope) => `int[i${value}[]]`
   }),
   plus: (left, right) => ({
     type: 'number',
-    toAmbient: (scope) => `int[plus[left[${left.toAmbient(scope)}]|right[${right.toAmbient(scope)}]]]`
+    toAmbient: (scope) => `int[plus[l[${left.toAmbient(scope)}]|r[${right.toAmbient(scope)}]]]`
   }),
   multiply: (left, right) => ({
     type: 'number',
-    toAmbient: (scope) => `int[multiply[left[${left.toAmbient(scope)}]|right[${right.toAmbient(scope)}]]]`
+    toAmbient: (scope) => `int[multiply[l[${left.toAmbient(scope)}]|r[${right.toAmbient(scope)}]]]`
   })
 }
 
-const literal = (value) => {
+function literal (value) {
   let primitive = primitives[typeof value]
   if (primitive === undefined || primitive.literal === undefined) {
     throw new Error(`primitive '${typeof value}' is not supported as literal`)
