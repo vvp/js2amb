@@ -1,122 +1,87 @@
 const { literal, verifyPrimitive } = require('./primitives.js')
 const { ambient, seq, parallel } = require('./algebra_ast.js')
 
-const parameterDeclaration = (name) => ({
-  toAmbient: (scope) => {
-    return `write_ (${name})`
-  }
-})
-const variableExpression = (name) => ({
-  toAmbient: (scope) => {
-    return `read_ (${name})`
-  }
-})
-const binaryExpression = (left, right, operator) => {
-  let primitive = verifyPrimitive(left, right)
-  switch (operator) {
-    case '+':
-      return primitive.plus(left, right)
-    case '*':
-      return primitive.multiply(left, right)
-    default:
-      throw new Error(`Operator '${operator}' is not supported`)
+function parameterDeclaration(names) {
+  this.names = names
+  this.toAmbient = () => `write_ (${this.names.join(', ')})`
+}
+
+function returnExpression(name) {
+  this.name = name
+  this.toAmbient = () => `read_ (${this.name})`
+
+}
+function binaryExpression (left, right, operator) {
+  this.left = left
+  this.right = right
+  this.operator = operator
+  this.toAmbient = () => {
+    let primitive = verifyPrimitive(left, right)
+    switch (operator) {
+      case '+':
+        return primitive.plus(left, right)
+      case '*':
+        return primitive.multiply(left, right)
+      default:
+        throw new Error(`Operator '${operator}' is not supported`)
+    }
   }
 
 }
 
-const callExpression = (functionName) => ({
-  toAmbient: (scope) => {
-    return scope.functionCall(functionName)
+function callExpression (functionName) {
+  this.functionName = functionName
+  this.toAmbient =  () => {
+    return "scope.functionCall(this.functionName)"
   }
-})
+}
 
-const funcEnvelope = (expression) => ({
-  toAmbient: (scope) => {
+function funcEnvelope (expression) {
+  this.expr = expression
+  this.toAmbient = () => {
     return ambient('func',
-      expression.toAmbient(scope),
+      expression.toAmbient(),
       'open_')
   }
-})
+}
 
-const functionExpression = (args, expression) => ({
-  toAmbient: (scope) => {
+function functionExpression (args, expression) {
+  this.args = args
+  this.expression = expression
+  this.toAmbient = () => {
     return seq(
-      scope.functionArgs(args),
-      expression.toAmbient(scope))
+      args.toAmbient(),
+      expression.toAmbient())
   }
-})
+}
 
-const functionDefinition = (name, body) => ({
-  toAmbient: (scope) => {
-    let newScope = scope.newScope(name)
+function functionDefinition (name, body) {
+  this.name = name
+  this.body = body
+
+  this.toAmbient = () => {
     return ambient(name,
-      newScope.capabilities(),
       seq('write_ (init)', parallel(
         ':init',
-        body.toAmbient(newScope)
+        body.toAmbient()
       ))
     )
   }
-})
+}
 
-const programFile = (declarations, resultStatement) => ({
-  toAmbient: (scope) => {
+function programFile (declarations, resultStatement) {
+  this.declarations = declarations
+  this.toAmbient = () => {
     const algebra = declarations
-      .map(declaration => declaration.toAmbient(scope).toAlgebra())
+      .map(declaration => declaration.toAmbient().toAlgebra())
       .map(code => code.replace(/\r?\n\s*|\r\s*/g, '').replace(/\s+/g, ' '))
       .join('|')
     return algebra
   }
-})
-
-class Scope {
-  constructor (name, parentScope) {
-    this._name = name
-    this._parentScope = parentScope
-    this._auths = []
-  }
-
-  functionArgs (args) {
-    return parallel(...args.map(arg => arg.toAmbient(this)))
-  }
-
-  functionCall (functionName) {
-    let scopesToPass = this.allow('call', functionName)
-    let outCalls = scopesToPass.map(x => `out ${x}.`)
-    let inReturns = scopesToPass.reverse().map(x => `in ${x}.`)
-
-    return parallel(
-      ambient('call',
-        seq(`${outCalls}in ${functionName}.open_`,
-          ambient('return', `open_.${inReturns}in func`))),
-      ambient('func',
-        seq(`in_ ${functionName}.open ${functionName}.open_`)),
-      'open func')
-  }
-
-  newScope (name) {
-    return new Scope(name, this)
-  }
-
-  capabilities () {
-    return {
-      toAlgebra: () => {
-        return this._auths.map((auth) => `out_ ${auth.exit}.in_ ${auth.enter}`).join('|')
-      }
-    }
-  }
-
-  allow (exit, enter) {
-    if (this._parentScope === undefined) {
-      return []
-    }
-    this._auths.push({ exit: exit, enter: enter })
-    return [this._name].concat(this._parentScope.allow(exit, enter))
-  }
 }
 
+
 module.exports = {
-  Scope,
   literal,
   binaryExpression,
   functionExpression,
@@ -124,7 +89,7 @@ module.exports = {
   programFile,
   callExpression,
   parameterDeclaration,
-  variableExpression,
+  returnExpression,
   funcEnvelope
 
 }
