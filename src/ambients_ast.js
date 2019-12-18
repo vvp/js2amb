@@ -6,14 +6,17 @@ function parameterDeclaration(names) {
   this.toAmbient = () => `write_ (${this.names.join(', ')})`
 }
 
+function variableExpression(name) {
+  this.name = name
+  this.toAmbient = () => `read_ (${this.name})`
+  return `read_ (${this.name})`
+}
+
 function returnExpression(expr) {
   this.expr = expr
   this.toAmbient = () => {
-    if (this.expr instanceof returnExpression)
+    if (this.expr instanceof variableExpression)
       return this.expr.toAmbient()
-
-    if (typeof this.expr === 'string')
-      return `read_ (${this.expr})`
 
     return parallel(
       expr.toAmbient(),
@@ -102,6 +105,7 @@ module.exports = {
   callExpression,
   parameterDeclaration,
   returnExpression,
-  funcEnvelope
+  funcEnvelope,
+  variableExpression
 
 }

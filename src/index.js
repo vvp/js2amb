@@ -1,5 +1,5 @@
 const { Scope, parameterDeclaration, returnExpression, literal, binaryExpression, funcEnvelope, functionExpression,
-  functionDefinition, callExpression, programFile } = require('./ambients_ast.js')
+  functionDefinition, callExpression, programFile, variableExpression } = require('./ambients_ast.js')
 const astMapper = require('./esprima_ast_mapper.js')
 
 module.exports = function (js) {
@@ -8,10 +8,10 @@ module.exports = function (js) {
 
   jsAst.match('Identifier', (id, context) => {
     switch (context) {
-      case 'AFE.Params':
-        return new parameterDeclaration(id.name)
       case 'AFE.Body':
-        return new returnExpression(id.name)
+        return new variableExpression(id.name)
+      default:
+        throw new Error()
     }
   })
   jsAst.match('Literal', (node) => new literal(node.value))
