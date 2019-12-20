@@ -101,4 +101,60 @@ e[
       read_ (string)
     )
   )
+]|
+f[
+  write_ (init).(
+    :init|
+    write_ (x, y).(
+      string[
+        plus[
+          l[x[]]|
+          r[y[]]
+        ]
+      ]|
+      read_ (string)
+    )
+  )
+]|
+g[
+ write_ (init).(
+   :init|
+   write_ (x).(
+     string[
+       plus[
+         l[x[]]|
+         r[x[]]
+       ]
+     ]|
+     read_ (string)
+   )
+ )
+]|
+h[
+  write_ (init).(
+    :init|
+    write_ (x, y).(
+      string[
+        plus[
+          l[
+            string[
+              plus[
+                l[x[]]|
+                r[y[]]
+              ]
+            ]
+          ]|
+          r[
+            string[
+              plus[
+                l[y[]]|
+                r[x[]]
+              ]
+            ]
+          ]
+        ]
+      ]|
+      read_ (string)
+    )
+  )
 ]

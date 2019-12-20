@@ -27,7 +27,7 @@ const toUnknownType = (name) => {
 }
 
 const isConcreteType = (type) => {
-  return !(type instanceof AnyType)
+  return !(type instanceof AnyType || type instanceof IntersectionType)
 }
 
 const intersection = (first, second) => {

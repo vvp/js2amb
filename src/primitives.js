@@ -3,6 +3,7 @@ const types = require('./types.js')
 let primitives = {}
 
 primitives.string = {
+  name: 'string',
   literal: (value) => ({
     type: types.toValueType(value,'string'),
     toAmbient: () => `string[${value}[]]`
@@ -13,6 +14,7 @@ primitives.string = {
   })
 }
 primitives.number = {
+  name: 'int',
   literal: (value) => ({
     type: 'number',
     toAmbient: (scope) => `int[i${value}[]]`
@@ -38,10 +40,13 @@ function literal (value) {
 const verifyPrimitive = (left, right) => {
   let type = types.intersection(left.type, right.type)
   let supportedPrimitive = primitives[type.name]
-  if (supportedPrimitive === undefined)
-    throw new Error(`Binary operations of type '${type.desc} -> ${left.type.desc}' not supported yet`)
+  if (supportedPrimitive === undefined) {
+    console.log(`! Binary operations of type '${type.desc} -> ${left.type.desc}' not supported properly, so assuming type is a string for now`)
+    supportedPrimitive = primitives.string
+  }
 
   Object.assign(type, supportedPrimitive)
+
   return type
 }
 
