@@ -133,7 +133,7 @@ g[
 h[
   write_ (init).(
     :init|
-    write_ (x, y).(
+    write_ (x, y, z).(
       string[
         plus[
           l[

@@ -5,4 +5,4 @@ const d = (x) => "hello" + x + "again" + x
 const e = (x,y) => "hello" + x + y
 const f = (x,y) => x + y
 const g = (x) => x + x
-const h = (x,y) => x + y + (y + x)
+const h = (x,y,z) => x + y + (y + x)
