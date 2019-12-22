@@ -1,6 +1,6 @@
 a[
   write_ (init).(
-    :init|
+    {init}[]|
     write_ ().(
       string[
         plus[
@@ -14,12 +14,12 @@ a[
 ]|
 b[
   write_ (init).(
-    :init|
+    {init}[]|
     write_ (x).(
       string[
         plus[
           l[string[hello[]]]|
-          r[x[]]
+          r[{x}[]]
         ]
       ]|
       read_ (string)
@@ -28,7 +28,7 @@ b[
 ]|
 c[
   write_ (init).(
-    :init|
+    {init}[]|
     write_ (x).(
       string[
         plus[
@@ -36,7 +36,7 @@ c[
             string[
               plus[
                 l[string[hello[]]]|
-                r[x[]]
+                r[{x}[]]
               ]
             ]
           ]|
@@ -51,7 +51,7 @@ c[
 ]|
 d[
   write_ (init).(
-    :init|
+    {init}[]|
     write_ (x).(
       string[
         plus[
@@ -64,7 +64,7 @@ d[
                       l[
                         string[hello[]]
                       ]|
-                      r[x[]]
+                      r[{x}[]]
                     ]
                   ]
                 ]|
@@ -74,7 +74,7 @@ d[
               ]
             ]
           ]|
-          r[x[]]
+          r[{x}[]]
         ]
       ]|
       read_ (string)
@@ -83,7 +83,7 @@ d[
 ]|
 e[
   write_ (init).(
-    :init|
+    {init}[]|
     write_ (x, y).(
       string[
         plus[
@@ -91,11 +91,11 @@ e[
             string[
               plus[
                 l[string[hello[]]]|
-                r[x[]]
+                r[{x}[]]
               ]
             ]
           ]|
-          r[y[]]
+          r[{y}[]]
         ]
       ]|
       read_ (string)
@@ -104,12 +104,12 @@ e[
 ]|
 f[
   write_ (init).(
-    :init|
+    {init}[]|
     write_ (x, y).(
       string[
         plus[
-          l[x[]]|
-          r[y[]]
+          l[{x}[]]|
+          r[{y}[]]
         ]
       ]|
       read_ (string)
@@ -118,12 +118,12 @@ f[
 ]|
 g[
  write_ (init).(
-   :init|
+   {init}[]|
    write_ (x).(
      string[
        plus[
-         l[x[]]|
-         r[x[]]
+         l[{x}[]]|
+         r[{x}[]]
        ]
      ]|
      read_ (string)
@@ -132,23 +132,23 @@ g[
 ]|
 h[
   write_ (init).(
-    :init|
+    {init}[]|
     write_ (x, y, z).(
       string[
         plus[
           l[
             string[
               plus[
-                l[x[]]|
-                r[y[]]
+                l[{x}[]]|
+                r[{y}[]]
               ]
             ]
           ]|
           r[
             string[
               plus[
-                l[y[]]|
-                r[x[]]
+                l[{y}[]]|
+                r[{x}[]]
               ]
             ]
           ]
