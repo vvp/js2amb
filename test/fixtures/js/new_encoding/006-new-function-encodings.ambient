@@ -12,4 +12,13 @@ b[
       read_ (fn_r0)
     )
   )
+]|
+c[
+  write_ (init).(
+    :init|
+    write_ (fn, x).write (fn, x).read_ (fn, fn_r0).(
+      string[plus[l[fn_r0[]]|r[string[hello[]]]|
+      read_ (string)
+    )
+  )
 ]

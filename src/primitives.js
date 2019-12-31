@@ -1,16 +1,21 @@
 const types = require('./types.js')
 
+const { ambient, seq, parallel } = require('./algebra_ast.js')
+
 let primitives = {}
 
 primitives.string = {
   name: 'string',
   literal: (value) => ({
     type: types.toValueType(value,'string'),
-    toAmbient: () => `string[${value}[]]`
+    toAmbient: () => ambient('string', ambient(value))
   }),
   plus: (left, right) => ({
     type: types.intersection(left.type, right.type),
-    toAmbient: () => `string[plus[l[${left.toAmbient()}]|r[${right.toAmbient()}]]]`
+    toAmbient: () => ambient('string',
+        ambient('plus',
+          ambient('l', left.toAmbient()),
+          ambient('r', right.toAmbient())))
   })
 }
 primitives.number = {

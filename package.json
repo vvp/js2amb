@@ -9,7 +9,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "esprima": "latest",
     "mime-types": "^2.1.24",
-    "mocha": "^6.2.1"
+    "mocha": "^6.2.1",
+    "shift-parser": "^7.0.0",
+    "shift-ast": "latest"
   }
 }

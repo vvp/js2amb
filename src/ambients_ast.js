@@ -56,6 +56,7 @@ function callExpression (functionName, args) {
   this.functionName = functionName
   this.args = args
   this.callId = `${this.functionName}_r${callCounter++}`
+  this.type = types.toFunctionType(functionName)
   this.toAmbient =  () => {
     return seq(
       `write (${this.functionName}, ${args.join(', ')})`,

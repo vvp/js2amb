@@ -26,8 +26,12 @@ const toUnknownType = (name) => {
   return new AnyType(name)
 }
 
+const toFunctionType = (name) => {
+  return new AnyType(name + "()")
+}
+
 const isConcreteType = (type) => {
-  return !(type instanceof AnyType || type instanceof IntersectionType)
+  return !(type instanceof AnyType || type instanceof IntersectionType) && type !== undefined
 }
 
 const intersection = (first, second) => {
@@ -41,6 +45,6 @@ const intersection = (first, second) => {
 }
 
 module.exports = {
-  toValueType, intersection, toUnknownType
+  toValueType, intersection, toUnknownType, toFunctionType
 
 }
