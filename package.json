@@ -14,5 +14,8 @@
     "mocha": "^6.2.1",
     "shift-parser": "^7.0.0",
     "shift-ast": "latest"
+  },
+  "devDependencies": {
+    "shift-codegen": "^6.0.0"
   }
 }
