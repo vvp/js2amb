@@ -33,34 +33,49 @@ const transformer = function (program) {
   }
   this.IdentifierExpression = (node, scope) => {
     scope.addIdentifierExpression(node)
+    return node
   }
-  this.BindingIdentifier = (node, scope) => node
   this.FormalParameters = (node, scope) => {
     node.items.forEach(x => scope.addParameter(x))
     return node
   }
+
+  const literalExpression = (node, scope) => {
+    scope.addLiteralExpression(node)
+    return node
+  }
+  this.LiteralStringExpression = literalExpression
+  this.LiteralNumericExpression = literalExpression
+  this.LiteralBooleanExpression = literalExpression
 }
 
 function SSABody() {
   this.statements = []
-  this.counter = 0
   this.variableMap = new Map()
 
+  const forVariable = (varName) => ({
+    identifier: `var_${varName}`,
+    original: varName
+  })
+  const forLiteral = (value) => ({
+    identifier: `lit_${value}`,
+    original: value
+  })
 
-  this.newIdentifierRef = (varName) => {
-    if (!this.variableMap.has(varName)) {
-      this.variableMap.set(varName, [this.nextName()])
-      return [this.nextName(), varName]
+  this.newRef = (handle) => {
+    if (!this.variableMap.has(handle.identifier)) {
+      this.variableMap.set(handle.identifier, [this.nextName()])
+      return [this.nextName(), handle.original]
     }
 
     let newRef = this.nextName()
-    let refs = this.variableMap.get(varName)
+    let refs = this.variableMap.get(handle.identifier)
     let prevRef = refs[refs.length-1]
     refs.push(newRef)
     return [newRef, prevRef]
   }
   this.addIdentifierExpression = (expr) => {
-    let [newRef, prevRef] = this.newIdentifierRef(expr.name)
+    let [newRef, prevRef] = this.newRef(forVariable(expr.name))
 
     this.statements.push(new AST.VariableDeclaration({
       kind: "const",
@@ -96,7 +111,7 @@ function SSABody() {
   }
 
   this.addParameter = (item) => {
-    let [newRef, prevRef] = this.newIdentifierRef(item.name)
+    let [newRef, prevRef] = this.newRef(forVariable(item.name))
     this.statements.push(new AST.VariableDeclaration({
       kind: "const",
       declarators: [
@@ -107,6 +122,25 @@ function SSABody() {
           init: new AST.IdentifierExpression({
             name: prevRef
           })
+        })
+      ]
+    }))
+  }
+
+  this.addLiteralExpression = (literal) => {
+    let [newRef, prevRef] = this.newRef(forLiteral(literal.value))
+    this.statements.push(new AST.VariableDeclaration({
+      kind: "const",
+      declarators: [
+        new AST.VariableDeclarator({
+          binding: new AST.BindingIdentifier({
+            name: newRef
+          }),
+          init: prevRef === literal.value ?
+              literal :
+              new AST.IdentifierExpression({
+                name: prevRef
+              })
         })
       ]
     }))

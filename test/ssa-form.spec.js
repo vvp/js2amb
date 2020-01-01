@@ -14,7 +14,7 @@ const ensureNotEqual = (actual, expected) => {
 }
 
 describe('JS SSA-fier', () => {
-  it('Normalizes the JS AST', () => {
+  it('Normalizes the JS function parameters', () => {
     ensureEqual(normalize(parse('const a = (x,y) => x')), parse(`const a = (x,y) => { 
       const c0 = x;
       const c1 = y;
@@ -34,5 +34,29 @@ describe('JS SSA-fier', () => {
     }`))
     ensureNotEqual(normalize(parse('(x) => x')), parse(`(x) => x`))
   })
+
+
+  it('Normalizes the literal expressions', () => {
+    ensureEqual(normalize(parse('() => "hello"')), parse(`() => { 
+      const c0 = "hello";
+      return c0; 
+    }`))
+
+    ensureEqual(normalize(parse('() => 123')), parse(`() => { 
+      const c0 = 123;
+      return c0; 
+    }`))
+
+    ensureEqual(normalize(parse('() => true')), parse(`() => { 
+      const c0 = true;
+      return c0; 
+    }`))
+
+    ensureEqual(normalize(parse('() => 12.34')), parse(`() => { 
+      const c0 = 12.34;
+      return c0; 
+    }`))
+  })
+
 
 })
