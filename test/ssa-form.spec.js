@@ -146,4 +146,58 @@ describe('JS SSA-fier', () => {
       return c19;
     }`))
   })
+
+  it('Normalizes callExpressions', () => {
+    ensureEqual(normalize(parse('() => fn()')), parse(`() => { 
+      const c0 = fn;
+      const c1 = c0();
+      return c1; 
+    }`))
+
+    ensureEqual(normalize(parse('() => fn("hello")')), parse(`() => { 
+      const c0 = fn;
+      const c1 = "hello";
+      const c2 = c0(c1);
+      return c2; 
+    }`))
+
+    ensureEqual(normalize(parse('(x) => fn(x)')), parse(`(x) => { 
+      const c0 = x;
+      const c1 = fn;      
+      const c2 = c0;
+      const c3 = c1(c2);
+      return c3;
+    }`))
+
+    ensureEqual(normalize(parse('(fn, x) => fn(x)')), parse(`(fn, x) => { 
+      const c0 = fn;
+      const c1 = x;      
+      const c2 = c0;
+      const c3 = c1;
+      const c4 = c2(c3);
+      return c4;
+    }`))
+
+    ensureEqual(normalize(parse('(fn, x) => fn(x) + "hello"')), parse(`(fn, x) => { 
+      const c0 = fn;
+      const c1 = x;      
+      const c2 = c0;
+      const c3 = c1;
+      const c4 = c2(c3);
+      const c5 = "hello";
+      const c6 = c4 + c5;
+      return c6;
+    }`))
+
+    ensureEqual(normalize(parse('(fn, x) => fn(fn(x))')), parse(`(fn, x) => { 
+      const c0 = fn;
+      const c1 = x;
+      const c2 = c0;
+      const c3 = c2;
+      const c4 = c1;
+      const c5 = c3(c4);
+      const c6 = c3(c5);
+      return c6;
+    }`))
+  })
 })

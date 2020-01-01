@@ -54,6 +54,13 @@ const transformer = function (program) {
     scope.addBinaryExpression(node)
     return node
   }
+
+  this.CallExpression = (node, scope) => {
+    this.transform(node.callee, scope)
+    this.transform(node.arguments, scope)
+    scope.addCallExpression(node)
+    return node
+  }
 }
 
 function SSABody () {
@@ -71,6 +78,8 @@ function SSABody () {
         return forLiteral(node.value)
       case 'BinaryExpression':
         return forBinaryExpr(node.operator, forNode(node.left), forNode(node.right))
+      case 'CallExpression':
+        return forCallExpr(forNode(node.callee), node.arguments.map(forNode).filter(x => x !== undefined))
     }
   }
   const forVariable = (varName) => ({
@@ -83,6 +92,11 @@ function SSABody () {
   })
   const forBinaryExpr = (operator, left, right) => ({
     identifier: `${left.identifier} ${operator} ${right.identifier}`,
+    original: undefined
+  })
+
+  const forCallExpr = (callee, args) => ({
+    identifier: `${callee.identifier}(${args.map(arg => arg.identifier).join(',')})`,
     original: undefined
   })
 
@@ -194,6 +208,32 @@ function SSABody () {
             right: new AST.IdentifierExpression({
               name: rightRef
             })
+          })
+        })
+      ]
+    }))
+  }
+
+  this.addCallExpression = (callExpr) => {
+    let [newRef, _] = this.newRef(forNode(callExpr))
+
+    let calleeRef = this.getRef(forNode(callExpr.callee))
+    let argRefs = callExpr.arguments.map(forNode).filter(x => x !== undefined).map(this.getRef)
+
+    this.statements.push(new AST.VariableDeclaration({
+      kind: 'const',
+      declarators: [
+        new AST.VariableDeclarator({
+          binding: new AST.BindingIdentifier({
+            name: newRef
+          }),
+          init: new AST.CallExpression({
+            callee: new AST.IdentifierExpression({
+              name: calleeRef
+            }),
+            arguments: argRefs.map(ref => new AST.IdentifierExpression({
+                name: ref
+            }))
           })
         })
       ]
