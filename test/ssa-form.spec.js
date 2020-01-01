@@ -1,7 +1,7 @@
 const assert = require('assert').strict
 
 const { parseScript } = require('shift-parser')
-const {transformer} = require('../src/shift-ssa.js')
+const { transformer } = require('../src/shift-ssa.js')
 
 const parse = (program) => parseScript(program)
 const normalize = (program, expected) => new transformer(program).transform()
@@ -35,7 +35,6 @@ describe('JS SSA-fier', () => {
     ensureNotEqual(normalize(parse('(x) => x')), parse(`(x) => x`))
   })
 
-
   it('Normalizes the literal expressions', () => {
     ensureEqual(normalize(parse('() => "hello"')), parse(`() => { 
       const c0 = "hello";
@@ -57,6 +56,5 @@ describe('JS SSA-fier', () => {
       return c0; 
     }`))
   })
-
 
 })

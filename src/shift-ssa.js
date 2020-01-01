@@ -49,7 +49,7 @@ const transformer = function (program) {
   this.LiteralBooleanExpression = literalExpression
 }
 
-function SSABody() {
+function SSABody () {
   this.statements = []
   this.variableMap = new Map()
 
@@ -70,7 +70,7 @@ function SSABody() {
 
     let newRef = this.nextName()
     let refs = this.variableMap.get(handle.identifier)
-    let prevRef = refs[refs.length-1]
+    let prevRef = refs[refs.length - 1]
     refs.push(newRef)
     return [newRef, prevRef]
   }
@@ -78,7 +78,7 @@ function SSABody() {
     let [newRef, prevRef] = this.newRef(forVariable(expr.name))
 
     this.statements.push(new AST.VariableDeclaration({
-      kind: "const",
+      kind: 'const',
       declarators: [
         new AST.VariableDeclarator({
           binding: new AST.BindingIdentifier({
@@ -96,7 +96,7 @@ function SSABody() {
     return `c${this.statements.length}`
   }
   this.lastName = () => {
-    return `c${this.statements.length-1}`
+    return `c${this.statements.length - 1}`
   }
   this.getStatements = () => {
     let declarations = this.statements.map(stmt => new AST.VariableDeclarationStatement({
@@ -113,7 +113,7 @@ function SSABody() {
   this.addParameter = (item) => {
     let [newRef, prevRef] = this.newRef(forVariable(item.name))
     this.statements.push(new AST.VariableDeclaration({
-      kind: "const",
+      kind: 'const',
       declarators: [
         new AST.VariableDeclarator({
           binding: new AST.BindingIdentifier({
@@ -130,17 +130,17 @@ function SSABody() {
   this.addLiteralExpression = (literal) => {
     let [newRef, prevRef] = this.newRef(forLiteral(literal.value))
     this.statements.push(new AST.VariableDeclaration({
-      kind: "const",
+      kind: 'const',
       declarators: [
         new AST.VariableDeclarator({
           binding: new AST.BindingIdentifier({
             name: newRef
           }),
           init: prevRef === literal.value ?
-              literal :
-              new AST.IdentifierExpression({
-                name: prevRef
-              })
+            literal :
+            new AST.IdentifierExpression({
+              name: prevRef
+            })
         })
       ]
     }))
@@ -148,4 +148,4 @@ function SSABody() {
 
 }
 
-module.exports = {transformer}
+module.exports = { transformer }
