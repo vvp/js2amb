@@ -1,12 +1,12 @@
 a[
   write_ (init).(
-    :init|
+    {init}[]|
     write_ (x).read_ (x)
   )
 ]|
 b[
   write_ (init).(
-    :init|
+    {init}[]|
     write_ (fn, x).write (fn, x).read_ (fn, fn_r0).(
       fn_r0[]|
       read_ (fn_r0)

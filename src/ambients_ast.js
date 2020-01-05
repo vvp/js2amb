@@ -10,7 +10,7 @@ function parameterDeclaration(names) {
 function variableExpression(name) {
   this.name = name
   this.type = types.toUnknownType(name)
-  this.toAmbient = () => `${this.name}[]`
+  this.toAmbient = () => `{${this.name}}[]`
 }
 
 function returnExpression(expr) {
@@ -91,7 +91,7 @@ function functionDefinition (name, body) {
   this.toAmbient = () => {
     return ambient(name,
       seq('write_ (init)', parallel(
-        ':init',
+        '{init}[]',
         body.toAmbient()
       ))
     )
